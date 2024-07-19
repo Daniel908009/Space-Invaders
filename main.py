@@ -6,7 +6,8 @@ import threading
 
 # function to reset the game
 def reset():
-    global enemy_x, enemy_y, enemy_x_change, player_x, player_y, player_x_change, bullet_x, bullet_y, score, lives, enemy_y_change, screen_height, screen_width, space_ship, enemy_ship, bullet, base_speed, mode_active, difficulty_active, num_of_enemies, fire_rate, one_way_enemies_created, all_enemies_moving
+    # globaly accesses most of the variables and sets them to their new values or the default ones
+    global enemy_x, enemy_y, enemy_x_change, player_x, player_y, player_x_change, bullet_x, bullet_y, score, lives, enemy_y_change, screen_height, screen_width, space_ship, enemy_ship, bullet, base_speed, mode_active, difficulty_active, num_of_enemies, fire_rate, one_way_enemies_created, all_enemies_moving, bullet_y_change
     enemy_x.clear()
     enemy_y.clear()
     enemy_x_change.clear()
@@ -23,19 +24,27 @@ def reset():
     getting = screen.get_size()
     screen_width = getting[0]
     screen_height = getting[1]
-    #print(screen_width, screen_height)
 
     # resizing everything according to the new screen size
     space_ship = pygame.transform.scale(space_ship, (screen_height/6, screen_height/6))
-    enemy_ship = pygame.transform.scale(enemy_ship, (screen_height/8*2, screen_height/12))
+    enemy_ship = pygame.transform.scale(enemy_ship, (screen_height/8*2-5, screen_height/12))
     bullet = pygame.transform.scale(bullet, (space_ship.get_width()/2, space_ship.get_width()/2))
 
     # setting new player possition
     player_x = screen_width // 2 - space_ship.get_width() // 2
     player_y = screen_height - space_ship.get_height()
 
+    # resizing the background
+    global background
+    background = pygame.transform.scale(background, (screen_width, screen_height))
+
     # setting the new base speed based on the new screen size
-    #base_speed = 2
+    if screen_width > 800:
+        base_speed = 2
+        bullet_y_change = 2
+    else:
+        base_speed = 1
+        bullet_y_change = 1
 
 # function to fire a bullet
 def fire_bullet(x, y):
@@ -43,23 +52,25 @@ def fire_bullet(x, y):
     bullet_y.append(y)
 
 # function to apply the settings
-def apply_settings(mode, difficulty, resizability, num_of_enemiesf, livesf, fire_ratef):
+def apply_settings(mode, difficulty, resizability, num_of_enemiesf, livesf, fire_ratef, window):
     global num_of_enemies, mode_active, difficulty_active, screen_width, screen_height, lives, fire_rate, one_way_enemies_created, all_enemies_moving
-    if int(num_of_enemiesf.get()) > 0:
+    # checking if the values are valid
+    if int(num_of_enemiesf.get()) <= 0 or int(livesf.get()) <= 0 or float(fire_ratef.get()) <= 0:
+        return
+    else:
+    # destroying the settings window
+        window.destroy()
+    # applying the settings
         num_of_enemies = int(num_of_enemiesf.get())
-    else:
-        return
-    if int(livesf.get()) > 0:
         lives = int(livesf.get())
-    else:
-        return
-    if float(fire_ratef.get()) >= 0:
         fire_rate = float(fire_ratef.get())
+    # applying resizability
     if resizability.get():
         global screen, mode_active, difficulty_active
         screen = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
     else:
         screen = pygame.display.set_mode((screen_width, screen_height))
+    # changing the mode and difficulty based on the inputed values
     if mode.get() == "One wave":
         mode_active = "One wave"
         all_enemies_moving = False
@@ -72,9 +83,11 @@ def apply_settings(mode, difficulty, resizability, num_of_enemiesf, livesf, fire
         difficulty_active = "Scalable"
     elif difficulty.get() == "Impossible":
         difficulty_active = "Impossible"
+
+    # resetting the game to apply changes to the values
     reset()
 
-# function to create a settings window
+# function to create a settings window with tkinter
 def settings_window():
     window = tkinter.Tk()
     window.title("Settings")
@@ -118,7 +131,7 @@ def settings_window():
     num_of_enemies_entry = tkinter.Entry(frame, textvariable=num_of_enemies_var)
     num_of_enemies_entry.grid(row=3, column=1)
     # creating a label for instructions
-    instructions_label = tkinter.Label(frame, text="*More is recommended for one wave mode")
+    instructions_label = tkinter.Label(frame, text="*More is recommended for one wave mode", fg="red")
     instructions_label.grid(row=4, column=0, columnspan=2)
     # creating a label for lives setting
     lives_label = tkinter.Label(frame, text="Number of lives:")
@@ -129,7 +142,7 @@ def settings_window():
     lives_entry = tkinter.Entry(frame, textvariable=lives_var)
     lives_entry.grid(row=5, column=1)
     # creating a label for instructions
-    instructions_label = tkinter.Label(frame, text="*More is recommended for harder difficulties")
+    instructions_label = tkinter.Label(frame, text="*More is recommended for harder difficulties", fg="red")
     instructions_label.grid(row=6, column=0, columnspan=2)
     # creating a label for the fire rate setting
     fire_rate_label = tkinter.Label(frame, text="Fire rate:")
@@ -140,11 +153,11 @@ def settings_window():
     fire_rate_entry = tkinter.Entry(frame, textvariable=fire_rate_var)
     fire_rate_entry.grid(row=7, column=1)
     # creating apply button
-    apply_button = tkinter.Button(window, text="Apply", command=lambda:apply_settings(mode_var, difficulty_var, resizability_var, num_of_enemies_var, lives_var, fire_rate_var), width=20, height=2)
+    apply_button = tkinter.Button(window, text="Apply", command=lambda:apply_settings(mode_var, difficulty_var, resizability_var, num_of_enemies_var, lives_var, fire_rate_var, window), width=20, height=2)
     apply_button.pack(side="bottom")
     window.mainloop()
 
-# function to create enemies
+# function to create enemies at the start of the game
 def create_enemies():
     global enemy_x, enemy_y, num_of_enemies, screen_width
     possitions = screen_width // num_of_enemies
@@ -158,6 +171,8 @@ def create_enemy():
     enemy_x.append(0)
     enemy_y.append(50)
     enemy_x_change.append(base_speed)
+
+    # based on the difficulty selected the speed of the enemies will change
     if difficulty_active == "Scalable":
         for i in range(len(enemy_x_change)):
             if enemy_x_change[i] > 0:
@@ -189,38 +204,42 @@ def game_over_screen(result):
     for i in range(len(enemy_x_change)):
         enemy_x_change[i] = 0
 
+    game_over = True
     # game over screen loop
-    while running:
+    while game_over:
         screen.fill((0, 0, 0))
-        font = pygame.font.Font("freesansbold.ttf", 64)
+        font = pygame.font.Font("freesansbold.ttf", screen_height//10)
         if result == "Lost":
             # displaying game over text
             game_over_text = font.render("Game Over", True, (255, 255, 255))
-            screen.blit(game_over_text, (200, 150))
+            screen.blit(game_over_text, (screen_height//10, screen_height//10))
         elif result == "win":
             # displaying win text
             win_text = font.render("You Win", True, (255, 255, 255))
-            screen.blit(win_text, (250, 150))
+            screen.blit(win_text, (screen_height//10, screen_height//10))
         # displaying final score
         final_score_text = font.render("Score: " + str(score), True, (255, 255, 255))
-        screen.blit(final_score_text, (250, 300))
+        screen.blit(final_score_text, (screen_height//10, screen_height//10*2))
         # displaying difficulty and mode
         difficulty_text = font.render("Difficulty: " + difficulty_active, True, (255, 255, 255))
-        screen.blit(difficulty_text, (150, 400))
+        screen.blit(difficulty_text, (screen_height//10, screen_height//10*3))
         mode_text = font.render("Mode: " + mode_active, True, (255, 255, 255))
-        screen.blit(mode_text, (150, 500))
+        screen.blit(mode_text, (screen_height//10, screen_height//10*4))
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                game_over = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     reset()
+                    game_over = False
 
 # function to determine whether player can fire a bullet or not
 def bullet_state():
     global bullet_a, fire_rate
     while running:
+        # bullet cooldown
         if bullet_a == False:
             time.sleep(fire_rate)
             bullet_a = True
@@ -228,7 +247,7 @@ def bullet_state():
 
 # function to spawn enemies in one wave mode, this is different from endless because in this mode enemies spawn with a delay in between them (if that makes sense)
 def one_wave_spawn():
-    global enemy_x_change, enemy_x, enemy_y, score, one_way_enemies_created, all_enemies_moving     #, enemyshotdown
+    global enemy_x_change, enemy_x, enemy_y, score, one_way_enemies_created, all_enemies_moving 
     # setting the speeds of all the enemies to 0, they will not move until they will be activated
     for i in range(len(enemy_x_change)):
         enemy_x_change[i] = 0
@@ -284,7 +303,7 @@ for i in range(num_of_enemies):
     enemy_x_change.append(base_speed)
 enemy_y_change = 0
 enemy_ship = pygame.image.load("UFO.png")
-enemy_ship = pygame.transform.scale(enemy_ship, (screen_height/8*2, screen_height/12))
+enemy_ship = pygame.transform.scale(enemy_ship, (screen_height/8*2-5, screen_height/12))
 create_enemies()
 
 # player variables
@@ -302,7 +321,6 @@ bullet_x = []
 bullet_y = []
 bullet_a = True
 bullet_y_change = 1
-#enemyshotdown = 0
 bullet = pygame.image.load("triangle.png")
 bullet = pygame.transform.scale(bullet, (space_ship.get_width()/2, space_ship.get_width()/2))
 
@@ -317,6 +335,10 @@ fire_bullet_thread.start()
 # thread for the one wave mode
 one_wave_thread = threading.Thread(target=one_wave_spawn)
 
+# setting up background image
+background = pygame.image.load("background.jpg")
+background = pygame.transform.scale(background, (screen_width, screen_height))
+
 # main loop
 while running:
     
@@ -326,8 +348,9 @@ while running:
 
     # setting up the background
     screen.fill((0, 0, 0))
+    screen.blit(background, (0, 0))
 
-    # event loop
+    # event loop, checking for different events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -345,9 +368,10 @@ while running:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d or event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 player_x_change = 0
+        # checking if player clicked on the settings button
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                if event.pos[0] >= 0 and event.pos[0] <= settings.get_width() and event.pos[1] >= 600-settings.get_height() and event.pos[1] <= 600:
+                if event.pos[0] >= 0 and event.pos[0] <= settings.get_width() and event.pos[1] >= screen_height-settings.get_height() and event.pos[1] <= screen_height:
                     settings_window()
 
     # placing the player
@@ -366,11 +390,22 @@ while running:
     # placing the enemies
     for i in range(len(enemy_x)):
         screen.blit(enemy_ship, (enemy_x[i], enemy_y[i]))
-        #print(len(enemy_x))
-        #print(str(enemy_x[i]) + " " + str(enemy_x_change[i]))
         enemy_x[i] = enemy_x[i] + enemy_x_change[i]
-        # moving the enemies down, if they reach the boundary
-        if enemy_x[i] == 0:
+        # moving the enemies down, if they reach the boundary, different for one wave and endless mode because of the one wave mode spawning enemies outside of the screen
+        if mode_active == "One wave" and enemy_x[i] == 0:
+            enemy_x_change[i] = base_speed
+            enemy_y[i] += enemy_ship.get_height()
+            if enemy_y[i] >= screen_height-space_ship.get_height():
+                lives -= 1
+                enemy_y[i] = 50
+                enemy_x[i] = 0
+                enemy_x_change[i] = base_speed
+                if lives == 0:
+                    # game over screen
+                    game_over_screen("Lost")
+        elif enemy_x[i] <= 0 and mode_active == "One wave":
+            pass
+        elif enemy_x[i] <= 0 and mode_active == "Endless":
             enemy_x_change[i] = base_speed
             enemy_y[i] += enemy_ship.get_height()
             if enemy_y[i] >= screen_height-space_ship.get_height():
@@ -415,6 +450,7 @@ while running:
     # checking collision between bullet and enemy
     for i in range(len(bullet_x)):
         for j in range(len(enemy_x)):
+            # this has to be in a try except block because the bullet can be removed in the loop and the index will be out of range
             try:
                 if bullet_x[i] >= enemy_x[j] and bullet_x[i] <= enemy_x[j] + enemy_ship.get_width() and bullet_y[i] >= enemy_y[j] and bullet_y[i] <= enemy_y[j] + enemy_ship.get_height():
                     score += 1
@@ -423,7 +459,6 @@ while running:
                     enemy_x.pop(j)
                     enemy_y.pop(j)
                     enemy_x_change.pop(j)
-                    #enemyshotdown += 1
                     if mode_active == "One wave":
                         pass
                     elif mode_active == "Endless":
@@ -439,4 +474,5 @@ while running:
     # update the screen
     pygame.display.update()
 
+# quit the game
 pygame.quit()
