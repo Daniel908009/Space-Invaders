@@ -3,6 +3,11 @@
 classic Space Invaders game programmed in Python with Pygame library <br>
 Game is fully resizable, has a settings menu with options to change mode, dificulty, etc. <br>
 *Note: for any changes in size of the objects inside the window to apply, hit the key "r" <br>
+<h1>Controls</h1>
+A, LEFT ARROW = move left <br>
+D, RIGHT ARROW = move right <br>
+SPACE = fire a bullet <br>
+R = reset game <br>
 <h1>Download instuctions</h1>
 *Note the links are instructional images <br>
 <h2>Using graphic UI</h2>
