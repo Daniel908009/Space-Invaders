@@ -3,6 +3,8 @@ import pygame
 import time
 import tkinter
 import threading
+import os
+import sys
 
 # function to reset the game
 def reset():
@@ -93,7 +95,7 @@ def settings_window():
     window.title("Settings")
     window.geometry("550x300")
     window.resizable(False, False)
-    window.iconbitmap("settings.ico")
+    window.iconbitmap(os.path.join(base_path, "settings.ico"))
     # creating a frame for the settings
     frame = tkinter.Frame(window)
     frame.pack()
@@ -281,9 +283,14 @@ pygame.init()
 screen_width = 800
 screen_height = 600
 
+if hasattr(sys, '_MEIPASS'):
+    base_path = sys._MEIPASS
+else:
+    base_path = os.path.abspath(".")
+
 # setting up the screen
 pygame.display.set_caption("Space Invaders")
-pygame.display.set_icon(pygame.image.load("icon.png"))
+pygame.display.set_icon(pygame.image.load(os.path.join(base_path, "icon.png")))
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # variables
@@ -302,12 +309,12 @@ base_speed = 1
 for i in range(num_of_enemies):
     enemy_x_change.append(base_speed)
 enemy_y_change = 0
-enemy_ship = pygame.image.load("UFO.png")
+enemy_ship = pygame.image.load(os.path.join(base_path, "UFO.png"))
 enemy_ship = pygame.transform.scale(enemy_ship, (screen_height/8*2-5, screen_height/12))
 create_enemies()
 
 # player variables
-space_ship = pygame.image.load("spaceship.png")
+space_ship = pygame.image.load(os.path.join(base_path, "spaceship.png"))
 space_ship = pygame.transform.scale(space_ship, (screen_height/6, screen_height/6))
 player_x = screen_width // 2 - space_ship.get_width() // 2
 player_y = screen_height - space_ship.get_height()
@@ -321,11 +328,11 @@ bullet_x = []
 bullet_y = []
 bullet_a = True
 bullet_y_change = 1
-bullet = pygame.image.load("triangle.png")
+bullet = pygame.image.load(os.path.join(base_path, "triangle.png"))
 bullet = pygame.transform.scale(bullet, (space_ship.get_width()/2, space_ship.get_width()/2))
 
 # settings button
-settings = pygame.image.load("settings.png")
+settings = pygame.image.load(os.path.join(base_path, "settings.png"))
 settings_active = False
 
                 # setting up the threads
@@ -336,7 +343,7 @@ fire_bullet_thread.start()
 one_wave_thread = threading.Thread(target=one_wave_spawn)
 
 # setting up background image
-background = pygame.image.load("background.jpg")
+background = pygame.image.load(os.path.join(base_path, "background.jpg"))
 background = pygame.transform.scale(background, (screen_width, screen_height))
 
 # main loop
