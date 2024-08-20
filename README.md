@@ -35,3 +35,7 @@ If you dont have git than first enter the folowing command: sudo apt install git
 Now open a console and enter the folowing code: pip install -r /path/to/requirements.txt <br>
 *Replace the /path/to/requirements.txt with the actual path. <br>
 Enjoy the game! <br>
+<h1>Screenshots of the game</h1>
+(https://github.com/user-attachments/assets/81721bd4-c950-40bd-8c4c-15dea39d9fd7)
+(https://github.com/user-attachments/assets/47f6cefa-29cc-4b6b-8895-2c9c3e404859)
+
