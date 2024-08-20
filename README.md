@@ -8,7 +8,7 @@ A, LEFT ARROW = move left <br>
 D, RIGHT ARROW = move right <br>
 SPACE = fire a bullet <br>
 R = reset game <br>
-<h1>Download instuctions</h1>
+<h1>Download instructions</h1>
 *Note the links are instructional images <br>
 <h2>Using graphic UI</h2>
 <h3>Downloading EXE <h3>
